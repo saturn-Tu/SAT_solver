@@ -7,7 +7,7 @@ OBJ_DIR	=	objs
 SRC_DIR = 	srcs
 
 # Optimizing flags
-FLAGS=-Wall -Wold-style-cast -Wformat=2 -ansi -pedantic -O3
+FLAGS=-w -Wold-style-cast -Wformat=2 -ansi -pedantic -O3 -std=c++11
 
 # List all the .o files you need to build here
 OBJS = $(OBJ_DIR)/parser.o $(OBJ_DIR)/main.o $(OBJ_DIR)/sat_solver.o
