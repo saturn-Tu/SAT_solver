@@ -8,6 +8,8 @@ void sat_solver::init_clauses(const char *DIMACS_cnf_file) {
   // construct vars_columns, sparse matrix
   assigned_value.resize(maxVarIndex+1);
   vars_columns.resize(maxVarIndex+1);
+  pos_watched.resize(maxVarIndex+1);
+  neg_watched.resize(maxVarIndex+1);
   clauses.resize(tmp_clauses.size());
   for(int c=0; c<tmp_clauses.size(); c++) {
     for(int v=0; v<tmp_clauses[c].size(); v++) {
@@ -31,6 +33,11 @@ void sat_solver::init_2literal_watch() {
       else if(counter == 1)
         watch_vars[c].second = itr;
       else break;
+      // initial pos/neg_watched list
+      if(itr->second == 1)
+        pos_watched[itr->first].insert(c);
+      else 
+        neg_watched[itr->first].insert(c);
       counter++;
     }
   }

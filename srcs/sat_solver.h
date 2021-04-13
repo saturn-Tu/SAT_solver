@@ -14,7 +14,7 @@ public:
   // clause indexs where specific variable exist, <var_idx, clauses_idx>
   vector< std::set<int> > vars_columns;
   // 2-literal watch member
-  // list of clauses in which x, x' is a watched variable
+  // list of clauses in which x, x' is a watched variable, row is variable index, set is clause idx
   vector< std::set<int> > pos_watched, neg_watched;
   vector< std::pair<std::map<int,bool>::iterator, std::map<int,bool>::iterator> > watch_vars;
 
