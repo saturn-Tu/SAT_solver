@@ -4,8 +4,9 @@
 
 class sat_solver {
 public:
-  vector< vector<int> > clauses;
   int maxVarIndex;
+  // sparse matrix
+  vector< vector<int> > clauses;
   // clause indexs where specific variable exist, <var_idx, clauses_idx>
   vector< std::set<int> > vars_columns;
 
