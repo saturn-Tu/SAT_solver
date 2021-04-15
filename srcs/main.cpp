@@ -10,5 +10,6 @@ int main(int argc, char** argv) {
   sat_solver solver;
   solver.init_clauses(argv[1]);
   solver.init_2literal_watch();
+  solver.DPLL(0, 0);
   return 0;
 }
