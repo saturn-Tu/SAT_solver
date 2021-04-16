@@ -55,7 +55,7 @@ bool sat_solver::DPLL(int var, bool value) {
     // update 2-literal watch variable
     vector<int> erase_watchs;
     if(literal.second) {
-      for(auto clause_idx : neg_watched[var]) {
+      for(auto clause_idx : neg_watched[literal.first]) {
         cout << "NEG\n";
         int status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
         print2literal_watch();
@@ -64,10 +64,10 @@ bool sat_solver::DPLL(int var, bool value) {
         if(status == 4) return UNSAT;
       }
       for(auto& clause_idx : erase_watchs) {
-        neg_watched[var].erase(clause_idx);
+        neg_watched[literal.first].erase(clause_idx);
       }
     } else {
-      for(auto clause_idx : pos_watched[var]) {
+      for(auto clause_idx : pos_watched[literal.first]) {
         cout << "POS\n";
         int status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
         print2literal_watch();
@@ -76,7 +76,7 @@ bool sat_solver::DPLL(int var, bool value) {
         if(status == 4) return UNSAT;
       }
       for(auto& clause_idx : erase_watchs) {
-        pos_watched[var].erase(clause_idx);
+        pos_watched[literal.first].erase(clause_idx);
       }
     }
     printPosNegWatch();
