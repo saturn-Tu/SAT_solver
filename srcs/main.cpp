@@ -10,6 +10,10 @@ int main(int argc, char** argv) {
   sat_solver solver;
   solver.init_clauses(argv[1]);
   solver.init_2literal_watch();
-  solver.DPLL(0, 0);
+  cout << "Ori 2-literal-watch\n";
+  solver.print2literal_watch();
+  solver.printPosNegWatch();
+  solver.DPLL(3, 1);
+  solver.printPosNegWatch();
   return 0;
 }

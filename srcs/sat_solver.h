@@ -4,7 +4,10 @@
 #include <utility>
 #include <cstdlib>
 #include <cstdint>
+#include <queue>
 #define NOT_ASSIGNED 2
+#define SAT 1
+#define UNSAT 0
 
 class sat_solver {
 public:
@@ -28,5 +31,8 @@ public:
   // case2, only remain one watched variable -> unit clause
   // case3, another watched variable is true, clause is resolved
   // case4, conflict clause
-  int update_2literal_watch(int clause_idx, int var, bool value);
+  int update_2literal_watch(int clause_idx, int var, bool value, std::queue< std::pair<int, bool> >& pending_literals, vector<int>& erase_watchs);
+  void print2literal_watch();
+  void printPosNegWatch();
+  void printAssignedValue();
 };

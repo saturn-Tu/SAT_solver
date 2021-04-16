@@ -46,29 +46,74 @@ void sat_solver::init_2literal_watch() {
 bool sat_solver::DPLL(int var, bool value) {
   // reserver for back_track
   vector<uint8_t> ori_assigned_value = assigned_value;
-  // update 2-literal watch variable
-  if(value) {
-    for(auto clause_idx : neg_watched[var]) {
-      int status = update_2literal_watch(clause_idx, var, value);
-      if(status == 4) {
+  queue< pair<int, bool> > pending_literals;
+  pending_literals.emplace(var, value);
+  while(!pending_literals.empty()) {
+    pair<int, bool> literal = pending_literals.front();
+    pending_literals.pop();
+    assigned_value[literal.first] = literal.second;
+    // update 2-literal watch variable
+    vector<int> erase_watchs;
+    if(literal.second) {
+      for(auto clause_idx : neg_watched[var]) {
+        cout << "NEG\n";
+        int status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
+        print2literal_watch();
+        cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
-        return 0;
+        if(status == 4) return UNSAT;
+      }
+      for(auto& clause_idx : erase_watchs) {
+        neg_watched[var].erase(clause_idx);
+      }
+    } else {
+      for(auto clause_idx : pos_watched[var]) {
+        cout << "POS\n";
+        int status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
+        print2literal_watch();
+        cout << "status = " << status << endl;
+        // case4: conflict!, return UNSAT
+        if(status == 4) return UNSAT;
+      }
+      for(auto& clause_idx : erase_watchs) {
+        pos_watched[var].erase(clause_idx);
       }
     }
-  } else {
-    for(auto clause_idx : pos_watched[var]) {
-      int status = update_2literal_watch(clause_idx, var, value);
-      if(status == 4) {
-        // case4: conflict!, return UNSAT
-        return 0;
-      }
+    printPosNegWatch();
+    int a; cin >> a;
+    cout << "finish" << endl;
+  }
+  // check clauses is SAT/UNSAT
+  bool sat_flag = 1;
+  for(auto& watch_var : watch_vars) {
+    // clause is SAT
+    if(watch_var.first->second == assigned_value[watch_var.first->first] || 
+      watch_var.second->second == assigned_value[watch_var.second->first])
+      continue;
+    sat_flag = 0;
+    // clause has NOT_ASSIGNED variable, still has chance to become SAT
+    if(assigned_value[watch_var.first->first] == NOT_ASSIGNED || 
+      assigned_value[watch_var.second->first] == NOT_ASSIGNED )
+      continue;
+    return UNSAT;
+  }
+  if(sat_flag == 1)
+    return SAT;
+  // choose an unassigned variable 
+  for(int n=1; n<assigned_value.size(); n++) {
+    if(assigned_value[n] == NOT_ASSIGNED) {
+      bool sat_flg = DPLL(n, 0);
+      if(sat_flg == SAT)
+        return SAT;
+      sat_flg = DPLL(n, 1);
+      return sat_flg;
     }
   }
-  // choose an unassigned variable 
-
+  return UNSAT;
 }
 
-int sat_solver::update_2literal_watch(int clause_idx, int var, bool value) {
+int sat_solver::update_2literal_watch(int clause_idx, int var, bool value, queue< pair<int, bool> >& pending_literals, vector<int>& erase_watchs) {
+  cout << "choose var " << var << ", val = " << value << ", clause idx = " << clause_idx << endl;
   auto& clause = clauses[clause_idx];
   auto& watch_var = watch_vars[clause_idx];
   unordered_map<int,bool>::iterator now_watch_var, watch_var2;
@@ -81,7 +126,7 @@ int sat_solver::update_2literal_watch(int clause_idx, int var, bool value) {
     now_watch_var = watch_var.second;
     watch_var2 = watch_var.first;
     use_var1_flg = 0;
-  } else return;
+  }
   // find another watched variable
   auto itr = now_watch_var;
   itr++;
@@ -89,16 +134,13 @@ int sat_solver::update_2literal_watch(int clause_idx, int var, bool value) {
     if(itr == clause.end())
       itr == clause.begin();
     int var_idx = itr->first;
-    if(assigned_value[var_idx] == NOT_ASSIGNED && itr != watch_var2)
+    if((assigned_value[var_idx]==NOT_ASSIGNED || assigned_value[var_idx]==clause[var_idx]) && itr != watch_var2)
       break;
   }
   if(itr != now_watch_var) {
     // case1, have found another watched variable
     // update pos/neg_watched list
-    if(value)
-      neg_watched[var].erase(clause_idx);
-    else
-      pos_watched[var].erase(clause_idx);
+    erase_watchs.emplace_back(clause_idx);
     if(itr->second)
       pos_watched[itr->first].insert(clause_idx);
     else
@@ -113,7 +155,7 @@ int sat_solver::update_2literal_watch(int clause_idx, int var, bool value) {
     int var2_idx = watch_var2->first;
     if(assigned_value[var2_idx] == NOT_ASSIGNED) {
       // case2, only remain one watched variable -> unit clause
-      
+      pending_literals.emplace(var2_idx, clause[var2_idx]);
       return 2;
     } else if (assigned_value[var2_idx] == watch_var2->second ) {
       // case3, another watched variable is true, clause is resolved
@@ -122,6 +164,38 @@ int sat_solver::update_2literal_watch(int clause_idx, int var, bool value) {
       // case4, conflict clause
       return 4;
     }
-    
+  }
+}
+
+void sat_solver::print2literal_watch() {
+  for(int n=0; n<watch_vars.size(); n++) {
+    auto& watch_var = watch_vars[n];
+    cout << "c" << n << ":\t";
+    cout << watch_var.first->first << " " << watch_var.first->second << " | ";
+    cout << watch_var.second->first << " " << watch_var.second->second << "\n";
+  }
+}
+
+void sat_solver::printPosNegWatch() {
+  printAssignedValue();
+  cout << "Pos watch list\n";
+  for(int n=1; n<pos_watched.size(); n++) {
+    cout << "var" << n << " ";
+    for(auto pos : pos_watched[n])
+      cout << pos << " ";
+    cout << endl;
+  }
+  cout << "Neg watch list\n";
+  for(int n=1; n<neg_watched.size(); n++) {
+    cout << "var" << n << " ";
+    for(auto neg : neg_watched[n])
+      cout << neg << " ";
+    cout << endl;
+  }
+}
+
+void sat_solver::printAssignedValue() {
+  for(int n=1; n<assigned_value.size(); n++) {
+    cout << n << " " << (int)assigned_value[n] << endl;
   }
 }
