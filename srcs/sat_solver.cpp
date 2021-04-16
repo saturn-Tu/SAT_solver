@@ -130,12 +130,15 @@ int sat_solver::update_2literal_watch(int clause_idx, int var, bool value, queue
   // find another watched variable
   auto itr = now_watch_var;
   itr++;
-  for(; itr != now_watch_var; itr++) {
-    if(itr == clause.end())
-      itr == clause.begin();
+  if(itr == clause.end())
+    itr = clause.begin();
+  for(; itr != now_watch_var;) {
     int var_idx = itr->first;
     if((assigned_value[var_idx]==NOT_ASSIGNED || assigned_value[var_idx]==clause[var_idx]) && itr != watch_var2)
       break;
+    itr++;
+    if(itr == clause.end())
+      itr = clause.begin();
   }
   if(itr != now_watch_var) {
     // case1, have found another watched variable
