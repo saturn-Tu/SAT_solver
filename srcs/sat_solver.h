@@ -25,6 +25,7 @@ public:
   //-------------- function -----------------
   void init_clauses(const char *DIMACS_cnf_file);
   bool DPLL(int var, bool value);
+  bool DPLL_start();
   void init_2literal_watch();
   // return status from 1~4
   // case1, have found another watched variable

@@ -104,9 +104,30 @@ bool sat_solver::DPLL(int var, bool value) {
   // choose an unassigned variable 
   for(int n=1; n<assigned_value.size(); n++) {
     if(assigned_value[n] == NOT_ASSIGNED) {
+      cout << "first try\n";
       bool sat_flg = DPLL(n, 0);
       if(sat_flg == SAT)
         return SAT;
+      assigned_value = ori_assigned_value;
+      cout << "second try\n";
+      sat_flg = DPLL(n, 1);
+      return sat_flg;
+    }
+  }
+  return UNSAT;
+}
+
+bool sat_solver::DPLL_start() {
+  vector<uint8_t> ori_assigned_value = assigned_value;
+  // choose an unassigned variable 
+  for(int n=1; n<assigned_value.size(); n++) {
+    if(assigned_value[n] == NOT_ASSIGNED) {
+      cout << "first try\n";
+      bool sat_flg = DPLL(n, 0);
+      if(sat_flg == SAT)
+        return SAT;
+      assigned_value = ori_assigned_value;
+      cout << "second try\n";
       sat_flg = DPLL(n, 1);
       return sat_flg;
     }
