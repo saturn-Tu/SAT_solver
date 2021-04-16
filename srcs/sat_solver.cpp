@@ -28,8 +28,10 @@ void sat_solver::init_2literal_watch() {
     watch_vars[c].second = clauses[c].end();
     uint8_t counter = 0;
     for(auto itr = clause.begin(); itr != clause.end() ; itr++) {
-      if(counter == 0)
+      if(counter == 0) {
         watch_vars[c].first = itr;
+        watch_vars[c].second = itr;
+      }
       else if(counter == 1)
         watch_vars[c].second = itr;
       else break;

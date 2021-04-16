@@ -13,7 +13,11 @@ int main(int argc, char** argv) {
   cout << "Ori 2-literal-watch\n";
   solver.print2literal_watch();
   solver.printPosNegWatch();
-  solver.DPLL(3, 1);
-  solver.printPosNegWatch();
+  bool sat_flg = solver.DPLL(3, 1);
+  if(sat_flg) {
+    cout << "SAT\n";
+    solver.printAssignedValue();
+  }
+  else cout << "UNSAT\n";
   return 0;
 }
