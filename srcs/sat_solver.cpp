@@ -258,3 +258,23 @@ void sat_solver::calculateJW_Score() {
     cout << var_score[n].var << ": " << var_score[n].pos_value << " " << var_score[n].neg_value << endl;
   }
 }
+
+void sat_solver::outputSAT_File(const char* sat_file) {
+  fstream output_file;
+  output_file.open(sat_file, ios::out);
+  output_file << "s ";
+  if(sat_flg) {
+    output_file << "SATISFIABLE\n";
+    output_file << "v ";
+    for(int n=1; n<assigned_value.size(); n++) {
+      // assign "NOT_ASSIGNED" as "0"
+      if(assigned_value[n] == NOT_ASSIGNED) 
+        output_file << "0 ";
+      else
+        output_file << (int)assigned_value[n] << " ";
+    }
+  } else {
+    output_file << "UNSATISFIABLE\n";
+  }
+  output_file.close();
+}

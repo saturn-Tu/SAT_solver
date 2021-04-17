@@ -14,11 +14,14 @@ int main(int argc, char** argv) {
   solver.print2literal_watch();
   solver.printPosNegWatch();
   solver.calculateJW_Score();
-  bool sat_flg = solver.DPLL_start();
-  if(sat_flg) {
+  solver.sat_flg = solver.DPLL_start();
+  if(solver.sat_flg) {
     cout << "SAT\n";
     solver.printAssignedValue();
   }
   else cout << "UNSAT\n";
+  string f_name(argv[1]);
+  f_name = f_name.substr(0, f_name.size()-4)+".sat";
+  solver.outputSAT_File(f_name.c_str());
   return 0;
 }

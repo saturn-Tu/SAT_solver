@@ -7,6 +7,8 @@
 #include <queue>
 #include <cmath>
 #include <algorithm>
+#include <string>
+#include <fstream>
 #define NOT_ASSIGNED 2
 #define SAT 1
 #define UNSAT 0
@@ -39,7 +41,7 @@ public:
   vector< std::pair<std::unordered_map<int,bool>::iterator, std::unordered_map<int,bool>::iterator> > watch_vars;
   // variable order
   vector<J_W_Socre> var_score;
-
+  bool sat_flg;
   //-------------- function -----------------
   void init_clauses(const char *DIMACS_cnf_file);
   bool DPLL(int var, bool value);
@@ -56,4 +58,5 @@ public:
   void printAssignedValue();
   // calculate Jeroslaw-Wang Score
   void calculateJW_Score();
+  void outputSAT_File(const char *sat_file);
 };
