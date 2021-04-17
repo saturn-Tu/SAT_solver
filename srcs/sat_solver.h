@@ -5,9 +5,25 @@
 #include <cstdlib>
 #include <cstdint>
 #include <queue>
+#include <cmath>
+#include <algorithm>
 #define NOT_ASSIGNED 2
 #define SAT 1
 #define UNSAT 0
+
+class J_W_Socre {
+public:
+  int var;
+  float pos_value, neg_value, max_value;
+  J_W_Socre() {
+    pos_value = 0; neg_value = 0, max_value = 0;
+  }
+  bool operator >(const J_W_Socre &other) const {
+    if(max_value == other.max_value)
+      return std::min(pos_value, neg_value) > std::min(other.pos_value, other.neg_value);
+    return max_value > other.max_value;
+  }
+};
 
 class sat_solver {
 public:
@@ -21,6 +37,8 @@ public:
   // list of clauses in which x, x' is a watched variable, row is variable index, set is clause idx
   vector< std::set<int> > pos_watched, neg_watched;
   vector< std::pair<std::unordered_map<int,bool>::iterator, std::unordered_map<int,bool>::iterator> > watch_vars;
+  // variable order
+  vector<J_W_Socre> var_score;
 
   //-------------- function -----------------
   void init_clauses(const char *DIMACS_cnf_file);
@@ -36,4 +54,6 @@ public:
   void print2literal_watch();
   void printPosNegWatch();
   void printAssignedValue();
+  // calculate Jeroslaw-Wang Score
+  void calculateJW_Score();
 };

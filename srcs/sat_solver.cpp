@@ -105,15 +105,17 @@ bool sat_solver::DPLL(int var, bool value) {
   // reserver for back_track
   vector<uint8_t> ori_assigned_value = assigned_value;
   // choose an unassigned variable 
-  for(int n=1; n<assigned_value.size(); n++) {
-    if(assigned_value[n] == NOT_ASSIGNED) {
+  for(int n=1; n<var_score.size(); n++) {
+    int& var_idx = var_score[n].var;
+    if(assigned_value[var_idx] == NOT_ASSIGNED) {
+      bool value = (var_score[n].pos_value > var_score[n].neg_value);
       cout << "first try\n";
-      bool sat_flg = DPLL(n, 0);
+      bool sat_flg = DPLL(var_idx, value);
       if(sat_flg == SAT)
         return SAT;
       assigned_value = ori_assigned_value;
       cout << "second try\n";
-      sat_flg = DPLL(n, 1);
+      sat_flg = DPLL(var_idx, !value);
       return sat_flg;
     }
   }
@@ -123,15 +125,17 @@ bool sat_solver::DPLL(int var, bool value) {
 bool sat_solver::DPLL_start() {
   vector<uint8_t> ori_assigned_value = assigned_value;
   // choose an unassigned variable 
-  for(int n=1; n<assigned_value.size(); n++) {
-    if(assigned_value[n] == NOT_ASSIGNED) {
+  for(int n=1; n<var_score.size(); n++) {
+    int& var_idx = var_score[n].var;
+    if(assigned_value[var_idx] == NOT_ASSIGNED) {
+      bool value = (var_score[n].pos_value > var_score[n].neg_value);
       cout << "first try\n";
-      bool sat_flg = DPLL(n, 0);
+      bool sat_flg = DPLL(var_idx, value);
       if(sat_flg == SAT)
         return SAT;
       assigned_value = ori_assigned_value;
       cout << "second try\n";
-      sat_flg = DPLL(n, 1);
+      sat_flg = DPLL(var_idx, !value);
       return sat_flg;
     }
   }
@@ -231,4 +235,26 @@ void sat_solver::printAssignedValue() {
   for(int n=1; n<assigned_value.size(); n++)
     cout << (int)assigned_value[n] << " ";
   cout << "\n";
+}
+
+void sat_solver::calculateJW_Score() {
+  var_score.resize(maxVarIndex+1);
+  for(int n=1; n<var_score.size(); n++)
+    var_score[n].var = n;
+  // calculate JW Score
+  for(auto& clause : clauses) {
+    for(auto literal : clause) {
+      auto& var = var_score[literal.first];
+      float score = exp2(-(int)clause.size());
+      if(literal.second) var.pos_value += score;
+      else var.neg_value += score;
+    }
+  }
+  // update max value at each literal score
+  for(int n=1; n<var_score.size(); n++)
+    var_score[n].max_value = max(var_score[n].pos_value, var_score[n].neg_value);
+  sort(var_score.begin()+1, var_score.end(), greater<J_W_Socre>());
+  for(int n=1; n<var_score.size(); n++) {
+    cout << var_score[n].var << ": " << var_score[n].pos_value << " " << var_score[n].neg_value << endl;
+  }
 }
