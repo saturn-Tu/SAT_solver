@@ -46,8 +46,6 @@ void sat_solver::init_2literal_watch() {
 }
 
 bool sat_solver::DPLL(int var, bool value) {
-  // reserver for back_track
-  vector<uint8_t> ori_assigned_value = assigned_value;
   queue< pair<int, bool> > pending_literals;
   pending_literals.emplace(var, value);
   while(!pending_literals.empty()) {
@@ -82,7 +80,7 @@ bool sat_solver::DPLL(int var, bool value) {
       }
     }
     printPosNegWatch();
-    int a; cin >> a;
+    //int a; cin >> a;
     cout << "finish" << endl;
   }
   // check clauses is SAT/UNSAT
@@ -101,6 +99,8 @@ bool sat_solver::DPLL(int var, bool value) {
   }
   if(sat_flag == 1)
     return SAT;
+  // reserver for back_track
+  vector<uint8_t> ori_assigned_value = assigned_value;
   // choose an unassigned variable 
   for(int n=1; n<assigned_value.size(); n++) {
     if(assigned_value[n] == NOT_ASSIGNED) {
@@ -221,7 +221,11 @@ void sat_solver::printPosNegWatch() {
 }
 
 void sat_solver::printAssignedValue() {
-  for(int n=1; n<assigned_value.size(); n++) {
-    cout << n << " " << (int)assigned_value[n] << endl;
-  }
+  cout << "Assigned value\n";
+  for(int n=1; n<assigned_value.size(); n++)
+    cout << n << " ";
+  cout << "\n";
+  for(int n=1; n<assigned_value.size(); n++)
+    cout << (int)assigned_value[n] << " ";
+  cout << "\n";
 }
