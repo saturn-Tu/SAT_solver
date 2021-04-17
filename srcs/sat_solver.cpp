@@ -54,30 +54,33 @@ bool sat_solver::DPLL(int var, bool value) {
     assigned_value[literal.first] = literal.second;
     // update 2-literal watch variable
     vector<int> erase_watchs;
+    int status;
     if(literal.second) {
       for(auto clause_idx : neg_watched[literal.first]) {
         cout << "NEG\n";
-        int status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
+        status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
         print2literal_watch();
         cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
-        if(status == 4) return UNSAT;
+        if(status == 4) break;
       }
       for(auto& clause_idx : erase_watchs) {
         neg_watched[literal.first].erase(clause_idx);
       }
+      if(status == 4) return UNSAT;
     } else {
       for(auto clause_idx : pos_watched[literal.first]) {
         cout << "POS\n";
-        int status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
+        status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
         print2literal_watch();
         cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
-        if(status == 4) return UNSAT;
+        if(status == 4) break;
       }
       for(auto& clause_idx : erase_watchs) {
         pos_watched[literal.first].erase(clause_idx);
       }
+      if(status == 4) return UNSAT;
     }
     printPosNegWatch();
     //int a; cin >> a;
