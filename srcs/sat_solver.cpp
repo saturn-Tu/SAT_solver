@@ -57,10 +57,10 @@ bool sat_solver::DPLL(int var, bool value) {
     int status;
     if(literal.second) {
       for(auto clause_idx : neg_watched[literal.first]) {
-        cout << "NEG\n";
+        //cout << "NEG\n";
         status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
-        print2literal_watch();
-        cout << "status = " << status << endl;
+        //print2literal_watch();
+        //cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
         if(status == 4) break;
       }
@@ -70,10 +70,10 @@ bool sat_solver::DPLL(int var, bool value) {
       if(status == 4) return UNSAT;
     } else {
       for(auto clause_idx : pos_watched[literal.first]) {
-        cout << "POS\n";
+        //cout << "POS\n";
         status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
-        print2literal_watch();
-        cout << "status = " << status << endl;
+        //print2literal_watch();
+        //cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
         if(status == 4) break;
       }
@@ -82,9 +82,9 @@ bool sat_solver::DPLL(int var, bool value) {
       }
       if(status == 4) return UNSAT;
     }
-    printPosNegWatch();
+    //printPosNegWatch();
     //int a; cin >> a;
-    cout << "finish" << endl;
+    //cout << "finish" << endl;
   }
   // check clauses is SAT/UNSAT
   bool sat_flag = 1;
@@ -109,12 +109,12 @@ bool sat_solver::DPLL(int var, bool value) {
     int& var_idx = var_score[n].var;
     if(assigned_value[var_idx] == NOT_ASSIGNED) {
       bool value = (var_score[n].pos_value > var_score[n].neg_value);
-      cout << "first try\n";
+      //cout << "first try\n";
       bool sat_flg = DPLL(var_idx, value);
       if(sat_flg == SAT)
         return SAT;
       assigned_value = ori_assigned_value;
-      cout << "second try\n";
+      //cout << "second try\n";
       sat_flg = DPLL(var_idx, !value);
       return sat_flg;
     }
@@ -129,12 +129,12 @@ bool sat_solver::DPLL_start() {
     int& var_idx = var_score[n].var;
     if(assigned_value[var_idx] == NOT_ASSIGNED) {
       bool value = (var_score[n].pos_value > var_score[n].neg_value);
-      cout << "first try\n";
+      //cout << "first try\n";
       bool sat_flg = DPLL(var_idx, value);
       if(sat_flg == SAT)
         return SAT;
       assigned_value = ori_assigned_value;
-      cout << "second try\n";
+      //cout << "second try\n";
       sat_flg = DPLL(var_idx, !value);
       return sat_flg;
     }
@@ -143,7 +143,7 @@ bool sat_solver::DPLL_start() {
 }
 
 int sat_solver::update_2literal_watch(int clause_idx, int var, bool value, queue< pair<int, bool> >& pending_literals, vector<int>& erase_watchs) {
-  cout << "choose var " << var << ", val = " << value << ", clause idx = " << clause_idx << endl;
+  //cout << "choose var " << var << ", val = " << value << ", clause idx = " << clause_idx << endl;
   auto& clause = clauses[clause_idx];
   auto& watch_var = watch_vars[clause_idx];
   unordered_map<int,bool>::iterator now_watch_var, watch_var2;
@@ -254,9 +254,9 @@ void sat_solver::calculateJW_Score() {
   for(int n=1; n<var_score.size(); n++)
     var_score[n].max_value = max(var_score[n].pos_value, var_score[n].neg_value);
   sort(var_score.begin()+1, var_score.end(), greater<J_W_Socre>());
-  for(int n=1; n<var_score.size(); n++) {
-    cout << var_score[n].var << ": " << var_score[n].pos_value << " " << var_score[n].neg_value << endl;
-  }
+  //for(int n=1; n<var_score.size(); n++) {
+  //  cout << var_score[n].var << ": " << var_score[n].pos_value << " " << var_score[n].neg_value << endl;
+  //}
 }
 
 void sat_solver::outputSAT_File(const char* sat_file) {

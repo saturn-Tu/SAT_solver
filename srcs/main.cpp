@@ -10,14 +10,14 @@ int main(int argc, char** argv) {
   sat_solver solver;
   solver.init_clauses(argv[1]);
   solver.init_2literal_watch();
-  cout << "Ori 2-literal-watch\n";
-  solver.print2literal_watch();
-  solver.printPosNegWatch();
+  //cout << "Ori 2-literal-watch\n";
+  //solver.print2literal_watch();
+  //solver.printPosNegWatch();
   solver.calculateJW_Score();
   solver.sat_flg = solver.DPLL_start();
   if(solver.sat_flg) {
     cout << "SAT\n";
-    solver.printAssignedValue();
+    //solver.printAssignedValue();
   }
   else cout << "UNSAT\n";
   string f_name(argv[1]);
