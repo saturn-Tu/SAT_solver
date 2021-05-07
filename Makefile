@@ -21,12 +21,15 @@ EXENAME=yasat
 # g++ $(FLAGS) $(OBJS) -lz -o $(EXENAME)
 all: $(OBJS)
 	g++ $(FLAGS) $(OBJS) -o $(EXENAME)
-$(OBJ_DIR)/main.o: $(SRC_DIR)/main.cpp
+$(OBJ_DIR)/main.o: $(SRC_DIR)/main.cpp | obj_dir
 	g++ $(FLAGS) -c $(SRC_DIR)/main.cpp -o $@
-$(OBJ_DIR)/sat_solver.o: $(SRC_DIR)/sat_solver.cpp $(SRC_DIR)/sat_solver.h
+$(OBJ_DIR)/sat_solver.o: $(SRC_DIR)/sat_solver.cpp $(SRC_DIR)/sat_solver.h | obj_dir
 	g++ $(FLAGS) -c $(SRC_DIR)/sat_solver.cpp -o $@
-$(OBJ_DIR)/parser.o: $(SRC_DIR)/parser.cpp $(SRC_DIR)/parser.h
+$(OBJ_DIR)/parser.o: $(SRC_DIR)/parser.cpp $(SRC_DIR)/parser.h | obj_dir
 	g++ $(FLAGS) -c $(SRC_DIR)/parser.cpp -o $@
+
+obj_dir:
+	mkdir -p $(OBJ_DIR)
 
 # The "phony" `clean' compilation target.  Type `make clean' to remove
 # your object files and your executable.
