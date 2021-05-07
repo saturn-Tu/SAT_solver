@@ -3,3 +3,4 @@
 *.exe
 yasat.exe.stackdump
 tmp
+*.sat
