@@ -7,6 +7,7 @@ void sat_solver::init_clauses(const char *DIMACS_cnf_file) {
   parse_DIMACS_CNF(tmp_clauses, maxVarIndex, DIMACS_cnf_file);
   // construct vars_columns, sparse matrix
   assigned_value.resize(maxVarIndex+1, NOT_ASSIGNED);
+  vars_level.resize(maxVarIndex+1, 0);
   vars_columns.resize(maxVarIndex+1);
   pos_watched.resize(maxVarIndex+1);
   neg_watched.resize(maxVarIndex+1);
@@ -45,13 +46,14 @@ void sat_solver::init_2literal_watch() {
   }
 }
 
-bool sat_solver::DPLL(int var, bool value) {
+bool sat_solver::DPLL(int var, bool value, uint8_t level) {
   queue< pair<int, bool> > pending_literals;
   pending_literals.emplace(var, value);
   while(!pending_literals.empty()) {
     pair<int, bool> literal = pending_literals.front();
     pending_literals.pop();
     assigned_value[literal.first] = literal.second;
+    vars_level[literal.first] = level;
     // update 2-literal watch variable
     vector<int> erase_watchs;
     int status;
@@ -67,7 +69,11 @@ bool sat_solver::DPLL(int var, bool value) {
       for(auto& clause_idx : erase_watchs) {
         neg_watched[literal.first].erase(clause_idx);
       }
-      if(status == 4) return UNSAT;
+      if(status == 4) {
+        // doing firstUIP to learn new constraint, then return
+        //firstUIP();
+        return UNSAT;
+      }
     } else {
       for(auto clause_idx : pos_watched[literal.first]) {
         //cout << "POS\n";
@@ -80,7 +86,11 @@ bool sat_solver::DPLL(int var, bool value) {
       for(auto& clause_idx : erase_watchs) {
         pos_watched[literal.first].erase(clause_idx);
       }
-      if(status == 4) return UNSAT;
+      if(status == 4) {
+        // doing firstUIP to learn new constraint, then return
+        //firstUIP();
+        return UNSAT;
+      }
     }
     //printPosNegWatch();
     //int a; cin >> a;
@@ -104,18 +114,20 @@ bool sat_solver::DPLL(int var, bool value) {
     return SAT;
   // reserver for back_track
   vector<uint8_t> ori_assigned_value = assigned_value;
+  vector<uint8_t> ori_vars_level = vars_level;
   // choose an unassigned variable 
   for(int n=1; n<var_score.size(); n++) {
     int& var_idx = var_score[n].var;
     if(assigned_value[var_idx] == NOT_ASSIGNED) {
       bool value = (var_score[n].pos_value > var_score[n].neg_value);
       //cout << "first try\n";
-      bool sat_flg = DPLL(var_idx, value);
+      bool sat_flg = DPLL(var_idx, value, level+1);
       if(sat_flg == SAT)
         return SAT;
       assigned_value = ori_assigned_value;
+      vars_level = ori_vars_level;
       //cout << "second try\n";
-      sat_flg = DPLL(var_idx, !value);
+      sat_flg = DPLL(var_idx, !value, level+1);
       return sat_flg;
     }
   }
@@ -124,18 +136,20 @@ bool sat_solver::DPLL(int var, bool value) {
 
 bool sat_solver::DPLL_start() {
   vector<uint8_t> ori_assigned_value = assigned_value;
+  vector<uint8_t> ori_vars_level = vars_level;
   // choose an unassigned variable 
   for(int n=1; n<var_score.size(); n++) {
     int& var_idx = var_score[n].var;
     if(assigned_value[var_idx] == NOT_ASSIGNED) {
       bool value = (var_score[n].pos_value > var_score[n].neg_value);
       //cout << "first try\n";
-      bool sat_flg = DPLL(var_idx, value);
+      bool sat_flg = DPLL(var_idx, value, 0);
       if(sat_flg == SAT)
         return SAT;
       assigned_value = ori_assigned_value;
+      vars_level = ori_vars_level;
       //cout << "second try\n";
-      sat_flg = DPLL(var_idx, !value);
+      sat_flg = DPLL(var_idx, !value, 0);
       return sat_flg;
     }
   }
@@ -277,4 +291,8 @@ void sat_solver::outputSAT_File(const char* sat_file) {
     output_file << "UNSATISFIABLE\n";
   }
   output_file.close();
+}
+
+void sat_solver::firstUIP() {
+
 }

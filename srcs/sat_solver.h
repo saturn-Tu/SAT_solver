@@ -31,6 +31,7 @@ class sat_solver {
 public:
   int maxVarIndex;
   vector<uint8_t> assigned_value;
+  vector<uint8_t> vars_level;
   // sparse matrix, 0 means negation, 1 means positive
   vector< std::unordered_map<int,bool> > clauses;
   // clause indexs where specific variable exist, <var_idx, clauses_idx>
@@ -44,7 +45,7 @@ public:
   bool sat_flg;
   //-------------- function -----------------
   void init_clauses(const char *DIMACS_cnf_file);
-  bool DPLL(int var, bool value);
+  bool DPLL(int var, bool value, uint8_t level);
   bool DPLL_start();
   void init_2literal_watch();
   // return status from 1~4
@@ -59,4 +60,5 @@ public:
   // calculate Jeroslaw-Wang Score
   void calculateJW_Score();
   void outputSAT_File(const char *sat_file);
+  void firstUIP();
 };
