@@ -58,6 +58,7 @@ public:
   bool DPLL(int var, bool value, int level);
   bool DPLL_start();
   void init_2literal_watch();
+  void init_2literal_watch_clause(int clause_idx);
   // return status from 1~4
   // case1, have found another watched variable
   // case2, only remain one watched variable -> unit clause

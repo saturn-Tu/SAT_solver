@@ -24,25 +24,29 @@ void sat_solver::init_clauses(const char *DIMACS_cnf_file) {
 void sat_solver::init_2literal_watch() {
   watch_vars.resize(clauses.size());
   for(int c=0; c<clauses.size(); c++) {
-    auto& clause = clauses[c];
-    watch_vars[c].first = clauses[c].end();
-    watch_vars[c].second = clauses[c].end();
-    uint8_t counter = 0;
-    for(auto itr = clause.begin(); itr != clause.end() ; itr++) {
-      if(counter == 0) {
-        watch_vars[c].first = itr;
-        watch_vars[c].second = itr;
-      }
-      else if(counter == 1)
-        watch_vars[c].second = itr;
-      else break;
-      // initial pos/neg_watched list
-      if(itr->second == 1)
-        pos_watched[itr->first].insert(c);
-      else 
-        neg_watched[itr->first].insert(c);
-      counter++;
+    init_2literal_watch_clause(c);
+  }
+}
+
+void sat_solver::init_2literal_watch_clause(int clause_idx) {
+  auto& clause = clauses[clause_idx];
+  watch_vars[clause_idx].first = clauses[clause_idx].end();
+  watch_vars[clause_idx].second = clauses[clause_idx].end();
+  uint8_t counter = 0;
+  for(auto itr = clause.begin(); itr != clause.end() ; itr++) {
+    if(counter == 0) {
+      watch_vars[clause_idx].first = itr;
+      watch_vars[clause_idx].second = itr;
     }
+    else if(counter == 1)
+      watch_vars[clause_idx].second = itr;
+    else break;
+    // initial pos/neg_watched list
+    if(itr->second == 1)
+      pos_watched[itr->first].insert(clause_idx);
+    else 
+      neg_watched[itr->first].insert(clause_idx);
+    counter++;
   }
 }
 
@@ -323,5 +327,6 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, stack<C
   // add firstUIP to new constraint
   if(conflict_clause.size() < 10) {
     clauses.push_back(conflict_clause);
+    init_2literal_watch_clause(clauses.size()-1);
   }
 }
