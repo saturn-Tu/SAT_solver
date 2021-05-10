@@ -46,7 +46,7 @@ void sat_solver::init_2literal_watch() {
   }
 }
 
-bool sat_solver::DPLL(int var, bool value, uint8_t level) {
+bool sat_solver::DPLL(int var, bool value, int level) {
   queue< pair<int, bool> > pending_literals;
   pending_literals.emplace(var, value);
   while(!pending_literals.empty()) {
@@ -293,6 +293,19 @@ void sat_solver::outputSAT_File(const char* sat_file) {
   output_file.close();
 }
 
-void sat_solver::firstUIP() {
-
+void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, int current_level) {
+  while(1) {
+    // check conflict_clause has more than one literal assigned at current decision level
+    uint8_t counter = 0;
+    int current_var = 0;
+    for(auto var : conflict_clause) {
+      if(vars_level[var.first] == current_level) {
+        current_var = var.first;
+        counter++;
+      }
+    }
+    if(counter < 2)
+      break;
+    
+  }
 }

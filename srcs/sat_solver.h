@@ -45,7 +45,7 @@ public:
   bool sat_flg;
   //-------------- function -----------------
   void init_clauses(const char *DIMACS_cnf_file);
-  bool DPLL(int var, bool value, uint8_t level);
+  bool DPLL(int var, bool value, int level);
   bool DPLL_start();
   void init_2literal_watch();
   // return status from 1~4
@@ -60,5 +60,5 @@ public:
   // calculate Jeroslaw-Wang Score
   void calculateJW_Score();
   void outputSAT_File(const char *sat_file);
-  void firstUIP();
+  void firstUIP(std::unordered_map<int,bool>& conflict_clause, int current_level);
 };
