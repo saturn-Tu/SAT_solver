@@ -4,6 +4,7 @@
 #include <utility>
 #include <cstdlib>
 #include <cstdint>
+#include <stack>
 #include <queue>
 #include <cmath>
 #include <algorithm>
@@ -25,6 +26,14 @@ public:
       return std::min(pos_value, neg_value) > std::min(other.pos_value, other.neg_value);
     return max_value > other.max_value;
   }
+};
+
+class ConflictPoint {
+public:
+  int var_idx;
+  int clause_idx;
+  ConflictPoint() {}
+  ConflictPoint(int var, int clause) : var_idx(var), clause_idx(clause) {}
 };
 
 class sat_solver {
@@ -53,12 +62,13 @@ public:
   // case2, only remain one watched variable -> unit clause
   // case3, another watched variable is true, clause is resolved
   // case4, conflict clause
-  int update_2literal_watch(int clause_idx, int var, bool value, std::queue< std::pair<int, bool> >& pending_literals, vector<int>& erase_watchs);
+  int update_2literal_watch(int clause_idx, int var, bool value, std::queue< std::pair<int, bool> >& pending_literals, 
+    vector<int>& erase_watchs, std::stack<ConflictPoint>& conflict_points);
   void print2literal_watch();
   void printPosNegWatch();
   void printAssignedValue();
   // calculate Jeroslaw-Wang Score
   void calculateJW_Score();
   void outputSAT_File(const char *sat_file);
-  void firstUIP(std::unordered_map<int,bool>& conflict_clause, int current_level);
+  void firstUIP(std::unordered_map<int,bool>& conflict_clause, std::stack<ConflictPoint>& conflict_points, int current_level);
 };

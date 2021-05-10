@@ -49,6 +49,7 @@ void sat_solver::init_2literal_watch() {
 bool sat_solver::DPLL(int var, bool value, int level) {
   queue< pair<int, bool> > pending_literals;
   pending_literals.emplace(var, value);
+  stack<ConflictPoint> conflict_points;
   while(!pending_literals.empty()) {
     pair<int, bool> literal = pending_literals.front();
     pending_literals.pop();
@@ -60,7 +61,7 @@ bool sat_solver::DPLL(int var, bool value, int level) {
     if(literal.second) {
       for(auto clause_idx : neg_watched[literal.first]) {
         //cout << "NEG\n";
-        status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
+        status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs, conflict_points);
         //print2literal_watch();
         //cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
@@ -72,7 +73,7 @@ bool sat_solver::DPLL(int var, bool value, int level) {
     } else {
       for(auto clause_idx : pos_watched[literal.first]) {
         //cout << "POS\n";
-        status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs);
+        status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs, conflict_points);
         //print2literal_watch();
         //cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
@@ -151,7 +152,8 @@ bool sat_solver::DPLL_start() {
   return UNSAT;
 }
 
-int sat_solver::update_2literal_watch(int clause_idx, int var, bool value, queue< pair<int, bool> >& pending_literals, vector<int>& erase_watchs) {
+int sat_solver::update_2literal_watch(int clause_idx, int var, bool value, queue< pair<int, bool> >& pending_literals, 
+  vector<int>& erase_watchs, stack<ConflictPoint>& conflict_points) {
   //cout << "choose var " << var << ", val = " << value << ", clause idx = " << clause_idx << endl;
   auto& clause = clauses[clause_idx];
   auto& watch_var = watch_vars[clause_idx];
@@ -198,6 +200,7 @@ int sat_solver::update_2literal_watch(int clause_idx, int var, bool value, queue
     if(assigned_value[var2_idx] == NOT_ASSIGNED) {
       // case2, only remain one watched variable -> unit clause
       pending_literals.emplace(var2_idx, clause[var2_idx]);
+      conflict_points.emplace(var2_idx, clause_idx);
       return 2;
     } else if (assigned_value[var2_idx] == watch_var2->second ) {
       // case3, another watched variable is true, clause is resolved
@@ -288,7 +291,8 @@ void sat_solver::outputSAT_File(const char* sat_file) {
   output_file.close();
 }
 
-void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, int current_level) {
+void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, stack<ConflictPoint>& conflict_points, 
+  int current_level) {
   while(1) {
     // check conflict_clause has more than one literal assigned at current decision level
     uint8_t counter = 0;
