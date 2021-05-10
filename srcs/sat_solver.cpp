@@ -305,6 +305,23 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, stack<C
     }
     if(counter < 2)
       break;
-    
+    auto conflictPoint = conflict_points.top();
+    conflict_points.pop();
+    auto past_clause = clauses[conflictPoint.clause_idx];
+    int clause_var = conflictPoint.var_idx;
+    // check var is in both clause
+    assert(past_clause.find(clause_var) != past_clause.end());
+    assert(conflict_clause.find(clause_var) != conflict_clause.end());
+    // check value in two clause is different
+    assert(past_clause[clause_var] == !conflict_clause[clause_var]);
+    // doing resolve
+    conflict_clause.erase(clause_var);
+    for(auto itr : past_clause) {
+      conflict_clause.insert(itr);
+    }
+  }
+  // add firstUIP to new constraint
+  if(conflict_clause.size() < 10) {
+    clauses.push_back(conflict_clause);
   }
 }

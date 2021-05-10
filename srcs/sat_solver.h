@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <string>
 #include <fstream>
+#include <cassert>
 #define NOT_ASSIGNED 2
 #define SAT 1
 #define UNSAT 0
