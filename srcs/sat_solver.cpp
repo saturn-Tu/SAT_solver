@@ -69,11 +69,6 @@ bool sat_solver::DPLL(int var, bool value, uint8_t level) {
       for(auto& clause_idx : erase_watchs) {
         neg_watched[literal.first].erase(clause_idx);
       }
-      if(status == 4) {
-        // doing firstUIP to learn new constraint, then return
-        //firstUIP();
-        return UNSAT;
-      }
     } else {
       for(auto clause_idx : pos_watched[literal.first]) {
         //cout << "POS\n";
@@ -86,11 +81,11 @@ bool sat_solver::DPLL(int var, bool value, uint8_t level) {
       for(auto& clause_idx : erase_watchs) {
         pos_watched[literal.first].erase(clause_idx);
       }
-      if(status == 4) {
-        // doing firstUIP to learn new constraint, then return
-        //firstUIP();
-        return UNSAT;
-      }
+    }
+    if(status == 4) {
+      // doing firstUIP to learn new constraint, then return
+      //firstUIP();
+      return UNSAT;
     }
     //printPosNegWatch();
     //int a; cin >> a;
