@@ -53,9 +53,11 @@ public:
   // variable order
   vector<J_W_Socre> var_score;
   bool sat_flg;
+  // for Non-chronological backtracking, return to desinate level
+  int return_level;
   //-------------- function -----------------
   void init_clauses(const char *DIMACS_cnf_file);
-  bool DPLL(int var, bool value, int level);
+  bool DPLL(int var, bool value, int current_level);
   bool DPLL_start();
   void init_2literal_watch();
   void init_2literal_watch_clause(int clause_idx);
