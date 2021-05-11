@@ -14,6 +14,7 @@ int main(int argc, char** argv) {
   //solver.print2literal_watch();
   //solver.printPosNegWatch();
   solver.calculateJW_Score();
+  solver.printPosNegWatch();
   solver.sat_flg = solver.DPLL_start();
   if(solver.sat_flg) {
     cout << "SAT\n";

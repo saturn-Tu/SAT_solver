@@ -4,8 +4,8 @@
 #include <utility>
 #include <cstdlib>
 #include <cstdint>
-#include <stack>
 #include <queue>
+#include <list>
 #include <cmath>
 #include <algorithm>
 #include <string>
@@ -65,12 +65,13 @@ public:
   // case3, another watched variable is true, clause is resolved
   // case4, conflict clause
   int update_2literal_watch(int clause_idx, int var, bool value, std::queue< std::pair<int, bool> >& pending_literals, 
-    vector<int>& erase_watchs, std::stack<ConflictPoint>& conflict_points);
+    vector<int>& erase_watchs, std::list<ConflictPoint>& conflict_points);
   void print2literal_watch();
   void printPosNegWatch();
   void printAssignedValue();
   // calculate Jeroslaw-Wang Score
   void calculateJW_Score();
   void outputSAT_File(const char *sat_file);
-  void firstUIP(std::unordered_map<int,bool>& conflict_clause, std::stack<ConflictPoint>& conflict_points, int current_level);
+  void firstUIP(std::unordered_map<int,bool>& conflict_clause, std::list<ConflictPoint>& conflict_points, int current_level);
+  bool checkResolveClause(std::unordered_map<int,bool>& clause, std::unordered_map<int,bool>& conflict_clause);
 };
