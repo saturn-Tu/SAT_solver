@@ -41,7 +41,7 @@ class sat_solver {
 public:
   int maxVarIndex;
   vector<uint8_t> assigned_value;
-  vector<uint8_t> vars_level;
+  vector<int> vars_level;
   // sparse matrix, 0 means negation, 1 means positive
   vector< std::unordered_map<int,bool> > clauses;
   // clause indexs where specific variable exist, <var_idx, clauses_idx>

@@ -54,14 +54,16 @@ bool sat_solver::DPLL(int var, bool value, int level) {
   queue< pair<int, bool> > pending_literals;
   pending_literals.emplace(var, value);
   stack<ConflictPoint> conflict_points;
+  //cout << "\nlevel: " << level << endl;
   while(!pending_literals.empty()) {
     pair<int, bool> literal = pending_literals.front();
     pending_literals.pop();
+    //cout << literal.first << " ";
     assigned_value[literal.first] = literal.second;
     vars_level[literal.first] = level;
     // update 2-literal watch variable
     vector<int> erase_watchs;
-    int status;
+    int status, conflict_clause_idx = 0;
     if(literal.second) {
       for(auto clause_idx : neg_watched[literal.first]) {
         //cout << "NEG\n";
@@ -69,7 +71,10 @@ bool sat_solver::DPLL(int var, bool value, int level) {
         //print2literal_watch();
         //cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
-        if(status == 4) break;
+        if(status == 4) {
+          conflict_clause_idx = clause_idx;
+          break;
+        }
       }
       for(auto& clause_idx : erase_watchs) {
         neg_watched[literal.first].erase(clause_idx);
@@ -81,7 +86,10 @@ bool sat_solver::DPLL(int var, bool value, int level) {
         //print2literal_watch();
         //cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
-        if(status == 4) break;
+        if(status == 4) {
+          conflict_clause_idx = clause_idx;
+          break;
+        }
       }
       for(auto& clause_idx : erase_watchs) {
         pos_watched[literal.first].erase(clause_idx);
@@ -89,7 +97,8 @@ bool sat_solver::DPLL(int var, bool value, int level) {
     }
     if(status == 4) {
       // doing firstUIP to learn new constraint, then return
-      //firstUIP();
+      auto conflict_clause = clauses[conflict_clause_idx];
+      firstUIP(conflict_clause, conflict_points, level);
       return UNSAT;
     }
     //printPosNegWatch();
@@ -114,7 +123,7 @@ bool sat_solver::DPLL(int var, bool value, int level) {
     return SAT;
   // reserver for back_track
   vector<uint8_t> ori_assigned_value = assigned_value;
-  vector<uint8_t> ori_vars_level = vars_level;
+  vector<int> ori_vars_level = vars_level;
   // choose an unassigned variable 
   for(int n=1; n<var_score.size(); n++) {
     int& var_idx = var_score[n].var;
@@ -136,7 +145,7 @@ bool sat_solver::DPLL(int var, bool value, int level) {
 
 bool sat_solver::DPLL_start() {
   vector<uint8_t> ori_assigned_value = assigned_value;
-  vector<uint8_t> ori_vars_level = vars_level;
+  vector<int> ori_vars_level = vars_level;
   // choose an unassigned variable 
   for(int n=1; n<var_score.size(); n++) {
     int& var_idx = var_score[n].var;
@@ -299,7 +308,7 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, stack<C
   int current_level) {
   while(1) {
     // check conflict_clause has more than one literal assigned at current decision level
-    uint8_t counter = 0;
+    int counter = 0;
     int current_var = 0;
     for(auto var : conflict_clause) {
       if(vars_level[var.first] == current_level) {
@@ -312,21 +321,52 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, stack<C
     auto conflictPoint = conflict_points.top();
     conflict_points.pop();
     auto past_clause = clauses[conflictPoint.clause_idx];
+    // handle past_clause and conflict_clause are same
+    if(past_clause == conflict_clause)
+      continue;
     int clause_var = conflictPoint.var_idx;
+    /*cout << "p: " << clause_var << endl;
+    cout << "conf: ";
+    for(auto var : conflict_clause) {
+      if(var.second)
+        cout << var.first << " ";
+      else 
+        cout << "-" << var.first << " ";
+    }
+    cout << "\npast: ";
+    for(auto var : past_clause) {
+      if(var.second)
+        cout << var.first << " ";
+      else 
+        cout << "-" << var.first << " ";
+    }
+    cout << "\n\n";*/
     // check var is in both clause
     assert(past_clause.find(clause_var) != past_clause.end());
     assert(conflict_clause.find(clause_var) != conflict_clause.end());
     // check value in two clause is different
     assert(past_clause[clause_var] == !conflict_clause[clause_var]);
     // doing resolve
-    conflict_clause.erase(clause_var);
     for(auto itr : past_clause) {
       conflict_clause.insert(itr);
     }
+    conflict_clause.erase(clause_var);
+    // print resolve
+    /*cout << "resolve: ";
+    for(auto var : conflict_clause) {
+      if(var.first == clause_var) continue;
+      if(var.second)
+        cout << var.first << " ";
+      else 
+        cout << "-" << var.first << " ";
+    }
+    cout << "\n";
+    cout << "size2: " << conflict_clause.size() << endl;*/
   }
   // add firstUIP to new constraint
-  if(conflict_clause.size() < 10) {
+  /*if(conflict_clause.size() < 10) {
     clauses.push_back(conflict_clause);
     init_2literal_watch_clause(clauses.size()-1);
-  }
+    cout << "*** Add new constraint!\n";
+  }*/
 }
