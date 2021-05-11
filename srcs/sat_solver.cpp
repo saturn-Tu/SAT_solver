@@ -307,12 +307,12 @@ void sat_solver::outputSAT_File(const char* sat_file) {
     output_file << "SATISFIABLE\n";
     output_file << "v ";
     for(int n=1; n<assigned_value.size(); n++) {
-      // assign "NOT_ASSIGNED" as "0"
-      if(assigned_value[n] == NOT_ASSIGNED) 
-        output_file << "0 ";
-      else
-        output_file << (int)assigned_value[n] << " ";
+      // assign "NOT_ASSIGNED" as "positive"
+      if(assigned_value[n] == 0)
+        output_file << "-";
+      output_file << n << " ";
     }
+    output_file << "0\n";
   } else {
     output_file << "UNSATISFIABLE\n";
   }
