@@ -411,6 +411,7 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
     if(clauses.size()-1 > 200) {
       int a; cin>> a;
     }
+    watch_vars.resize(watch_vars.size()+1);
     init_2literal_watch_clause(clauses.size()-1);
     cout << "*** Add new constraint!" << endl;
     cout << "size: " << clauses.size()-1 << endl;
