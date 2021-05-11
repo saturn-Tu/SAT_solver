@@ -54,11 +54,11 @@ bool sat_solver::DPLL(int var, bool value, int level) {
   queue< pair<int, bool> > pending_literals;
   pending_literals.emplace(var, value);
   list<ConflictPoint> conflict_points;
-  cout << "\nlevel: " << level << " " << var << " " << value << endl;
+  //cout << "\nlevel: " << level << " " << var << " " << value << endl;
   while(!pending_literals.empty()) {
     pair<int, bool> literal = pending_literals.front();
     pending_literals.pop();
-    cout << literal.first << " " << endl;
+    //cout << literal.first << " " << endl;
     assigned_value[literal.first] = literal.second;
     vars_level[literal.first] = level;
     // update 2-literal watch variable
@@ -66,10 +66,10 @@ bool sat_solver::DPLL(int var, bool value, int level) {
     int status, conflict_clause_idx = 0;
     if(literal.second) {
       for(auto clause_idx : neg_watched[literal.first]) {
-        cout << "NEG" << endl;
+        //cout << "NEG" << endl;
         status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs, conflict_points);
         //print2literal_watch();
-        cout << "status = " << status << endl;
+        //cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
         if(status == 4) {
           conflict_clause_idx = clause_idx;
@@ -81,12 +81,10 @@ bool sat_solver::DPLL(int var, bool value, int level) {
       }
     } else {
       for(auto clause_idx : pos_watched[literal.first]) {
-        cout << "POS" << endl;
-        cout << "c_idx: " << clause_idx << " ";
-        cout << "clause size: " << clauses.size() << endl;
+        //cout << "POS" << endl;
         status = update_2literal_watch(clause_idx, literal.first, literal.second, pending_literals, erase_watchs, conflict_points);
         //print2literal_watch();
-        cout << "status = " << status << endl;
+        //cout << "status = " << status << endl;
         // case4: conflict!, return UNSAT
         if(status == 4) {
           conflict_clause_idx = clause_idx;
@@ -169,7 +167,7 @@ bool sat_solver::DPLL_start() {
 
 int sat_solver::update_2literal_watch(int clause_idx, int var, bool value, queue< pair<int, bool> >& pending_literals, 
   vector<int>& erase_watchs, list<ConflictPoint>& conflict_points) {
-  cout << "choose var " << var << ", val = " << value << ", clause idx = " << clause_idx << endl;
+  //cout << "choose var " << var << ", val = " << value << ", clause idx = " << clause_idx << endl;
   auto& clause = clauses[clause_idx];
   auto& watch_var = watch_vars[clause_idx];
   unordered_map<int,bool>::iterator now_watch_var, watch_var2;
@@ -343,21 +341,17 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
         counter++;
       }
     }
-    cout << "before counter " << counter << endl;
     if(counter < 2)
       break;
     // find last relation clause
     if(conflict_points.empty())
       return;
     auto it=conflict_points.begin();
-    cout << "Check errer" << endl;
     for (; it!=conflict_points.end(); ++it) {
       auto& clause = clauses[it->clause_idx];
-      cout << "before checkResolveClause" << endl;
       if( checkResolveClause(clause, conflict_clause) )
         break;
     }
-    cout << "after checkResolveClause" << endl;
     assert(it != conflict_points.end());
     auto conflictPoint = *it;
     conflict_points.erase(it);
@@ -408,13 +402,8 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
   cout << "change flg " << change_flg << " " << conflict_clause.size() << endl;
   if(change_flg && conflict_clause.size() < 10) {
     clauses.push_back(conflict_clause);
-    if(clauses.size()-1 > 200) {
-      int a; cin>> a;
-    }
     watch_vars.resize(watch_vars.size()+1);
     init_2literal_watch_clause(clauses.size()-1);
     cout << "*** Add new constraint!" << endl;
-    cout << "size: " << clauses.size()-1 << endl;
-    printPosNegWatch();
   }
 }
