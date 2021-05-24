@@ -55,6 +55,9 @@ public:
   bool sat_flg;
   // for Non-chronological backtracking, return to desinate level
   int return_level;
+  // for random restart
+  int backtrack_counter;
+  int total_backtrack_counter;
   //-------------- function -----------------
   void init_clauses(const char *DIMACS_cnf_file);
   bool DPLL(int var, bool value, int current_level);

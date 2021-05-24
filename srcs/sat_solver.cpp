@@ -101,6 +101,7 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
       // doing firstUIP to learn new constraint, then return
       auto conflict_clause = clauses[conflict_clause_idx];
       firstUIP(conflict_clause, conflict_points, current_level);
+      backtrack_counter++;
       return UNSAT;
     }
     //printPosNegWatch();
@@ -119,6 +120,7 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
     if(assigned_value[watch_var.first->first] == NOT_ASSIGNED || 
       assigned_value[watch_var.second->first] == NOT_ASSIGNED )
       continue;
+    backtrack_counter++;
     return UNSAT;
   }
   if(sat_flag == 1)
@@ -135,6 +137,8 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
       bool sat_flg = DPLL(var_idx, next_value, current_level+1);
       if(sat_flg == SAT)
         return SAT;
+      if(backtrack_counter > 100)
+        return UNSAT;
       for(int n=1; n<vars_level.size(); n++)
         cout << setw(2) << n << " ";
       cout << endl;
@@ -148,6 +152,7 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
       if(return_level < current_level) {
         cout << return_level << " " << current_level << endl;
         cout << "Non-chronological backtracking" << " now_var:" << var_idx << "\n";
+        backtrack_counter++;
         return UNSAT;
       }
       assigned_value = ori_assigned_value;
@@ -160,6 +165,7 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
         cout << "-" << var_idx << endl;
       sat_flg = DPLL(var_idx, !next_value, current_level+1);
       cout << "second fail\n";
+      if(!sat_flg) backtrack_counter++;
       return sat_flg;
     }
   }
@@ -167,6 +173,8 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
 }
 
 bool sat_solver::DPLL_start() {
+  backtrack_counter = 0;
+  total_backtrack_counter = 0;
   vector<uint8_t> ori_assigned_value = assigned_value;
   vector<int> ori_vars_level = vars_level;
   // choose an unassigned variable 
@@ -174,6 +182,8 @@ bool sat_solver::DPLL_start() {
     int& var_idx = var_score[n].var;
     if(assigned_value[var_idx] == NOT_ASSIGNED) {
       bool value = (var_score[n].pos_value > var_score[n].neg_value);
+      assigned_value = ori_assigned_value;
+      vars_level = ori_vars_level;
       cout << "start first try\n";
       if(value)
         cout << var_idx << endl;
@@ -182,6 +192,13 @@ bool sat_solver::DPLL_start() {
       bool sat_flg = DPLL(var_idx, value, 0);
       if(sat_flg == SAT)
         return SAT;
+      if(backtrack_counter > 100) {
+        if(n == var_score.size()-1)  n = 0;
+        total_backtrack_counter += backtrack_counter;
+        backtrack_counter = 0;
+        cout << "**** Random Start! next idx: " << n+1 << endl;
+        continue;
+      }
       assigned_value = ori_assigned_value;
       vars_level = ori_vars_level;
       cout << "start second try\n";
@@ -190,6 +207,13 @@ bool sat_solver::DPLL_start() {
       else
         cout << "-" << var_idx << endl;
       sat_flg = DPLL(var_idx, !value, 0);
+      if(!sat_flg && backtrack_counter > 100) {
+        if(n == var_score.size()-1)  n = 0;
+        total_backtrack_counter += backtrack_counter;
+        backtrack_counter = 0;
+        cout << "**** Random Start! next idx: " << n+1 << endl;
+        continue;
+      }
       return sat_flg;
     }
   }
@@ -464,7 +488,7 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
   for(auto var : conflict_clause) {
     cout << vars_level[var.first] << " ";
   }
-  return_level = 0;
+  /*return_level = 0;
   for(auto var : conflict_clause) {
     if(vars_level[var.first] != current_level)
       return_level = max(return_level, vars_level[var.first]);
@@ -490,7 +514,7 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
   if(conflict_clause.size() == 1) {
     return_level = current_level-1;
     cout << "special handle: " << return_level << endl;
-  }
+  }*/
 
   // add firstUIP to new constraint
   //cout << "change flg " << change_flg << " " << conflict_clause.size() << endl;

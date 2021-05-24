@@ -23,5 +23,6 @@ int main(int argc, char** argv) {
   string f_name(argv[1]);
   f_name = f_name.substr(0, f_name.size()-4)+".sat";
   solver.outputSAT_File(f_name.c_str());
+  cout << solver.total_backtrack_counter << endl;
   return 0;
 }
