@@ -57,6 +57,7 @@ public:
   int return_level;
   // for random restart
   int backtrack_counter;
+  int backtrack_bound = 500;
   int total_backtrack_counter;
   //-------------- function -----------------
   void init_clauses(const char *DIMACS_cnf_file);

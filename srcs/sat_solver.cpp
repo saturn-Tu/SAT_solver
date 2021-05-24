@@ -101,7 +101,6 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
       // doing firstUIP to learn new constraint, then return
       auto conflict_clause = clauses[conflict_clause_idx];
       firstUIP(conflict_clause, conflict_points, current_level);
-      backtrack_counter++;
       return UNSAT;
     }
     //printPosNegWatch();
@@ -120,7 +119,6 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
     if(assigned_value[watch_var.first->first] == NOT_ASSIGNED || 
       assigned_value[watch_var.second->first] == NOT_ASSIGNED )
       continue;
-    backtrack_counter++;
     return UNSAT;
   }
   if(sat_flag == 1)
@@ -137,7 +135,7 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
       bool sat_flg = DPLL(var_idx, next_value, current_level+1);
       if(sat_flg == SAT)
         return SAT;
-      if(backtrack_counter > 100)
+      if(backtrack_counter > backtrack_bound)
         return UNSAT;
       for(int n=1; n<vars_level.size(); n++)
         cout << setw(2) << n << " ";
@@ -152,9 +150,9 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
       if(return_level < current_level) {
         cout << return_level << " " << current_level << endl;
         cout << "Non-chronological backtracking" << " now_var:" << var_idx << "\n";
-        backtrack_counter++;
         return UNSAT;
       }
+      //backtrack_counter++;
       assigned_value = ori_assigned_value;
       vars_level = ori_vars_level;
       cout << "second try\n";
@@ -165,7 +163,6 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
         cout << "-" << var_idx << endl;
       sat_flg = DPLL(var_idx, !next_value, current_level+1);
       cout << "second fail\n";
-      if(!sat_flg) backtrack_counter++;
       return sat_flg;
     }
   }
@@ -174,13 +171,15 @@ bool sat_solver::DPLL(int var, bool value, int current_level) {
 
 bool sat_solver::DPLL_start() {
   backtrack_counter = 0;
+  backtrack_bound = INT32_MAX;
   total_backtrack_counter = 0;
   vector<uint8_t> ori_assigned_value = assigned_value;
   vector<int> ori_vars_level = vars_level;
+  vector<bool> used_varables(assigned_value.size(), 0);
   // choose an unassigned variable 
   for(int n=1; n<var_score.size(); n++) {
     int& var_idx = var_score[n].var;
-    if(assigned_value[var_idx] == NOT_ASSIGNED) {
+    if(used_varables[var_idx] == 0) {
       bool value = (var_score[n].pos_value > var_score[n].neg_value);
       assigned_value = ori_assigned_value;
       vars_level = ori_vars_level;
@@ -192,11 +191,12 @@ bool sat_solver::DPLL_start() {
       bool sat_flg = DPLL(var_idx, value, 0);
       if(sat_flg == SAT)
         return SAT;
-      if(backtrack_counter > 100) {
+      if(backtrack_counter > backtrack_bound) {
         if(n == var_score.size()-1)  n = 0;
         total_backtrack_counter += backtrack_counter;
         backtrack_counter = 0;
         cout << "**** Random Start! next idx: " << n+1 << endl;
+        //calculateJW_Score();
         continue;
       }
       assigned_value = ori_assigned_value;
@@ -207,11 +207,12 @@ bool sat_solver::DPLL_start() {
       else
         cout << "-" << var_idx << endl;
       sat_flg = DPLL(var_idx, !value, 0);
-      if(!sat_flg && backtrack_counter > 100) {
+      if(!sat_flg && backtrack_counter > backtrack_bound) {
         if(n == var_score.size()-1)  n = 0;
         total_backtrack_counter += backtrack_counter;
         backtrack_counter = 0;
         cout << "**** Random Start! next idx: " << n+1 << endl;
+        //calculateJW_Score();
         continue;
       }
       return sat_flg;
@@ -382,7 +383,12 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
     else 
       cout << "-" << var.first << " ";
   }
+  cout << " | ";
+  for(auto var : conflict_clause) {
+    cout << vars_level[var.first] << " ";
+  }
   cout << "\n";
+
 
   while(1) {
     // check conflict_clause has more than one literal assigned at current decision level
@@ -463,7 +469,7 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
     }
     conflict_clause.erase(clause_var);
     // print resolve
-    /*cout << "resolve: ";
+    cout << "resolve: ";
     for(auto var : conflict_clause) {
       if(var.first == clause_var) continue;
       if(var.second)
@@ -471,7 +477,7 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
       else 
         cout << "-" << var.first << " ";
     }
-    cout << "\n";*/
+    cout << "\n";
     change_flg = 1;
   }
   // calculate Non-chronological backtracking return level
@@ -488,7 +494,7 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
   for(auto var : conflict_clause) {
     cout << vars_level[var.first] << " ";
   }
-  /*return_level = 0;
+  return_level = 0;
   for(auto var : conflict_clause) {
     if(vars_level[var.first] != current_level)
       return_level = max(return_level, vars_level[var.first]);
@@ -500,7 +506,7 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
     int control = 5;
     if(return_level < current_level-control) {
       if(return_level == 5) {
-        return_level = current_level-4;
+        return_level = current_level-5;
         cout << "\n**** Maybe error\n";
       }
       else {
@@ -514,7 +520,7 @@ void sat_solver::firstUIP(std::unordered_map<int,bool>& conflict_clause, list<Co
   if(conflict_clause.size() == 1) {
     return_level = current_level-1;
     cout << "special handle: " << return_level << endl;
-  }*/
+  }
 
   // add firstUIP to new constraint
   //cout << "change flg " << change_flg << " " << conflict_clause.size() << endl;
